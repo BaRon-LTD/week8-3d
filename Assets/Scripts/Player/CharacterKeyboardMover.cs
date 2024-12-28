@@ -2,73 +2,105 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-
-/**
- * This component moves a player controlled with a CharacterController using the keyboard.
- */
 [RequireComponent(typeof(CharacterController))]
-public class CharacterKeyboardMover : MonoBehaviour
-{
-    [Tooltip("Speed of player keyboard-movement, in meters/second")]
-    [SerializeField] float speed = 3.5f;
+public class CharacterKeyboardMover : MonoBehaviour {
+    [Tooltip("Walking speed of the player, in meters/second.")]
+    [SerializeField] float walkSpeed = 3.5f;
+
+    [Tooltip("Running speed of the player, in meters/second.")]
+    [SerializeField] float runSpeed = 7f;
+
+    [Tooltip("Gravity applied to the player, in meters/second^2.")]
     [SerializeField] float gravity = 9.81f;
 
-    private CharacterController cc;
+    [Tooltip("Jump force of the player, in meters/second.")]
+    [SerializeField] float jumpForce = 5f;
 
     [SerializeField] InputAction moveAction;
-    private void OnEnable() { moveAction.Enable(); }
-    private void OnDisable() { moveAction.Disable(); }
-    void OnValidate()
-    {
-        // Provide default bindings for the input actions.
-        // Based on answer by DMGregory: https://gamedev.stackexchange.com/a/205345/18261
+    [SerializeField] InputAction runAction;
+    [SerializeField] InputAction jumpAction;
+
+    private CharacterController cc;
+    private Vector3 velocity = Vector3.zero;
+
+    private float groundedBufferTime = 0.1f; // Time buffer for grounded check
+    private float groundedTimer = 0f; // Tracks time since last grounded state
+
+    void OnEnable() {
+        moveAction.Enable();
+        runAction.Enable();
+        jumpAction.Enable();
+    }
+
+    void OnDisable() {
+        moveAction.Disable();
+        runAction.Disable();
+        jumpAction.Disable();
+    }
+
+    void OnValidate() {
         if (moveAction == null)
             moveAction = new InputAction(type: InputActionType.Button);
         if (moveAction.bindings.Count == 0)
             moveAction.AddCompositeBinding("2DVector")
-                // WASD keys
                 .With("Up", "<Keyboard>/w")
                 .With("Down", "<Keyboard>/s")
                 .With("Left", "<Keyboard>/a")
                 .With("Right", "<Keyboard>/d");
+
+        if (runAction == null)
+            runAction = new InputAction(type: InputActionType.Button);
+        if (runAction.bindings.Count == 0)
+            runAction.AddBinding("<Keyboard>/leftShift");
+
+        if (jumpAction == null)
+            jumpAction = new InputAction(type: InputActionType.Button);
+        if (jumpAction.bindings.Count == 0)
+            jumpAction.AddBinding("<Keyboard>/space");
     }
 
-    void Start()
-    {
+    void Start() {
         cc = GetComponent<CharacterController>();
     }
 
-    Vector3 velocity = new Vector3(0, 0, 0);
-
-    void Update()
-    {
-        // Read movement input as Vector2
+    void Update() {
+        // Read movement input.
         Vector2 input = moveAction.ReadValue<Vector2>();
-
-        // Convert input to a Vector3 for movement on the XZ plane
         Vector3 movement = new Vector3(input.x, 0, input.y);
 
-        // Transform the movement vector to match the player's orientation
+        // Transform movement to match the player's orientation.
         movement = transform.TransformDirection(movement);
 
-        if (cc.isGrounded)
-        {
-            // Apply movement input to the velocity
-            velocity.x = movement.x * speed;
-            velocity.z = movement.z * speed;
+        // Determine if the player is running.
+        bool isRunning = runAction.ReadValue<float>() > 0;
+        float currentSpeed = isRunning ? runSpeed : walkSpeed;
 
-            // Reset vertical velocity when grounded
-            velocity.y = 0;
-        }
-        else
-        {
-            // Apply gravity if the player is not grounded
+        // Check if the player is grounded.
+        if (cc.isGrounded) {
+            groundedTimer = groundedBufferTime; // Reset the grounded timer when grounded
+            velocity.x = movement.x * currentSpeed;
+            velocity.z = movement.z * currentSpeed;
+
+            // Check for jump input.
+            if (jumpAction.WasPerformedThisFrame()) {
+                velocity.y = jumpForce; // Apply jump force.
+            } else {
+                velocity.y = 0; // Reset vertical velocity when grounded.
+            }
+        } else {
+            // Decrease grounded timer to track how recently the player was grounded.
+            groundedTimer -= Time.deltaTime;
+
+            // Allow jumping for a short time after leaving the ground (coyote time).
+            if (groundedTimer > 0 && jumpAction.WasPerformedThisFrame()) {
+                velocity.y = jumpForce; // Apply jump force during buffer.
+            }
+
+            // Apply gravity when not grounded.
             velocity.y -= gravity * Time.deltaTime;
         }
 
-        // Apply movement through the CharacterController
+        // Move the player using the CharacterController.
         cc.Move(velocity * Time.deltaTime);
     }
-
-
 }
