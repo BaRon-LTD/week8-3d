@@ -5,10 +5,10 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(CharacterController))]
 public class CharacterKeyboardMover : MonoBehaviour {
     [Tooltip("Walking speed of the player, in meters/second.")]
-    [SerializeField] float walkSpeed = 3.5f;
+    [SerializeField] float walkSpeed = 10f;
 
     [Tooltip("Running speed of the player, in meters/second.")]
-    [SerializeField] float runSpeed = 7f;
+    [SerializeField] float runSpeed = 18f;
 
     [Tooltip("Gravity applied to the player, in meters/second^2.")]
     [SerializeField] float gravity = 9.81f;
