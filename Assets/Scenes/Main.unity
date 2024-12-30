@@ -6691,9 +6691,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a70be40e1373d7947be550d3dce6702d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  guideMessage: 'Here is how to play:\n Move: WASD \n Shoot: Left click Mouse \n
-    Switch weapons: Scroll mouse / ''1'' or ''2'' keys \n Enjoy! \n Oh and do me
-    a favor and destroy all the cubes'
+  guideMessage: 'Here is how to play:\n Move: WASD \n Run: Shift \n Jump: Space \n
+    Shoot: Left click Mouse \n Switch weapons: Scroll mouse / ''1'' or ''2'' keys
+    \n Enjoy! \n Oh and do me a favor and destroy all the cubes'
   guideText: {fileID: 1052891895}
   guidePanel: {fileID: 208340394}
 --- !u!1 &789015211
