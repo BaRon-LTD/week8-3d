@@ -3,8 +3,8 @@ using TMPro;
 
 public class TargetCounter : MonoBehaviour
 {
-    public TextMeshProUGUI targetText; // Reference to the TextMeshPro UI component
-    public Transform targetsFolder; // The folder containing all target GameObjects
+    [SerializeField] private TextMeshProUGUI targetText; // Reference to the TextMeshPro UI component
+    [SerializeField] private Transform targetsFolder; // The folder containing all target GameObjects
     private int totalTargets;
     private int destroyedTargets;
 
