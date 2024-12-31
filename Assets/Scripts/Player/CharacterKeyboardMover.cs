@@ -1,9 +1,10 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(CharacterController))]
-public class CharacterKeyboardMover : MonoBehaviour {
+public class CharacterKeyboardMover : MonoBehaviour
+{
     [Tooltip("Walking speed of the player, in meters/second.")]
     [SerializeField] float walkSpeed = 10f;
 
@@ -26,44 +27,61 @@ public class CharacterKeyboardMover : MonoBehaviour {
     private float groundedBufferTime = 0.1f; // Time buffer for grounded check
     private float groundedTimer = 0f; // Tracks time since last grounded state
 
-    void OnEnable() {
+    void OnEnable()
+    {
         moveAction.Enable();
         runAction.Enable();
         jumpAction.Enable();
     }
 
-    void OnDisable() {
+    void OnDisable()
+    {
         moveAction.Disable();
         runAction.Disable();
         jumpAction.Disable();
     }
 
-    void OnValidate() {
+    void OnValidate()
+    {
         if (moveAction == null)
+        {
             moveAction = new InputAction(type: InputActionType.Button);
+        }
         if (moveAction.bindings.Count == 0)
+        {
             moveAction.AddCompositeBinding("2DVector")
                 .With("Up", "<Keyboard>/w")
                 .With("Down", "<Keyboard>/s")
                 .With("Left", "<Keyboard>/a")
                 .With("Right", "<Keyboard>/d");
+        }
 
         if (runAction == null)
+        {
             runAction = new InputAction(type: InputActionType.Button);
+        }
         if (runAction.bindings.Count == 0)
+        {
             runAction.AddBinding("<Keyboard>/leftShift");
+        }
 
         if (jumpAction == null)
+        {
             jumpAction = new InputAction(type: InputActionType.Button);
+        }
         if (jumpAction.bindings.Count == 0)
+        {
             jumpAction.AddBinding("<Keyboard>/space");
+        }
     }
 
-    void Start() {
+    void Start()
+    {
         cc = GetComponent<CharacterController>();
     }
 
-    void Update() {
+    void Update()
+    {
         // Read movement input.
         Vector2 input = moveAction.ReadValue<Vector2>();
         Vector3 movement = new Vector3(input.x, 0, input.y);
@@ -76,23 +94,30 @@ public class CharacterKeyboardMover : MonoBehaviour {
         float currentSpeed = isRunning ? runSpeed : walkSpeed;
 
         // Check if the player is grounded.
-        if (cc.isGrounded) {
+        if (cc.isGrounded)
+        {
             groundedTimer = groundedBufferTime; // Reset the grounded timer when grounded
             velocity.x = movement.x * currentSpeed;
             velocity.z = movement.z * currentSpeed;
 
             // Check for jump input.
-            if (jumpAction.WasPerformedThisFrame()) {
+            if (jumpAction.WasPerformedThisFrame())
+            {
                 velocity.y = jumpForce; // Apply jump force.
-            } else {
+            }
+            else
+            {
                 velocity.y = 0; // Reset vertical velocity when grounded.
             }
-        } else {
+        }
+        else
+        {
             // Decrease grounded timer to track how recently the player was grounded.
             groundedTimer -= Time.deltaTime;
 
             // Allow jumping for a short time after leaving the ground (coyote time).
-            if (groundedTimer > 0 && jumpAction.WasPerformedThisFrame()) {
+            if (groundedTimer > 0 && jumpAction.WasPerformedThisFrame())
+            {
                 velocity.y = jumpForce; // Apply jump force during buffer.
             }
 
